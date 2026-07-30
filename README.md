@@ -93,3 +93,76 @@ a 0 value instead of whatever random value already existed at the memory
 address.
 
 
+## UART Drivers
+**UART** stands for *Universal Asynchronous Receiver/Transmitter*. The source 
+code file `src/uart.c` allows us to talk directly to the hardware, and write 
+data one byte at a time. The Raspberry Pi exposes hardware peripherals 
+through memory addresses. Normally, when you write:
+```c
+int x = 5;
+```
+you are using RAM. But ARM processors allow certain addresses to be mapped to 
+hardware devices. For example:
+
+<table>
+  <thead>
+    <th>Address</th>
+    <th>Meaning</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0x00000000</td>
+      <td>RAM</td> 
+    </tr>
+    <tr>
+      <td>0x3F201000</td>
+      <td>UART Registers</td> 
+    </tr>
+    <tr>
+      <td>0x3F200000</td>
+      <td>GPIO registers</td> 
+    </tr>
+    <tr>
+      <td>0x3F300000</td>
+      <td>SPI Registers</td> 
+    </tr>
+  </tbody>
+</table>
+
+Writing to the addresses above doesn't wrote a value in RAM. Instead it 
+changes the hardware behavior. The following line 
+```c 
+*address = value;
+```
+usually means `RAM address -> Store some value`, but here
+`UART register address -> UART hardware -> Send a byte over serial`. The CPU 
+thinks it's writing memory. The hardware interprets it as a command.
+
+The Pi documentation says:
+> The PL011 UART registers begin at offset 0x201000 from the peripheral base.
+So we can get the starting address of UART0 like this:
+```
+0x3F000000
++
+0x00201000
+----------
+0x3F201000
+```
+
+### The Registers:
+Now we define specific UART registers:
+```c
+#define UART0_DR ((volatile unsigned int *)(UART0_BASE + 0x00))
+```
+DR means Data Register. This is where bytes are sent and received.
+So this:
+```c
+*UART0_DR = 'A';
+```
+is equivalent to:
+```
+Put the ASCII value for A into the UART transmit register
+```
+and the UART sends it. 
+
+
