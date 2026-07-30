@@ -2,6 +2,8 @@
 #ifndef GPIO_REGS_H
 #define GPIO_REGS_H
 
+#include "bcm2837.h"
+
 // There's no need to define the other GPFSEL registers because they're all 
 // contiguous in memory. Every register is 4 bytes apart and can be calculated
 // by shifting GPFSEL0 by 4 * registerNum places.
