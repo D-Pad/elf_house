@@ -1,35 +1,60 @@
-# Cross compiler tools
-CC      = aarch64-none-elf-gcc
-OBJCOPY = aarch64-none-elf-objcopy
+# --------------------------------------------------------
+# Toolchain
+# --------------------------------------------------------
 
-# Compiler flags
-CFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles
+CC      := aarch64-none-elf-gcc
+OBJCOPY := aarch64-none-elf-objcopy
 
-# Linker flags
-LDFLAGS = -T linker.ld
+# --------------------------------------------------------
+# Directories
+# --------------------------------------------------------
 
-# Source files
-SRC_C = main.c
-SRC_S = boot.S
+SRC_DIR := src
+INC_DIR := include
+BUILD   := build
 
-# Object files
-OBJ = build/main.o build/boot.o
+# --------------------------------------------------------
+# Sources
+# --------------------------------------------------------
+
+SRC_C := $(wildcard $(SRC_DIR)/*.c)
+SRC_S := $(wildcard $(SRC_DIR)/*.S)
+
+OBJ := \
+	$(patsubst $(SRC_DIR)/%.c,$(BUILD)/%.o,$(SRC_C)) \
+	$(patsubst $(SRC_DIR)/%.S,$(BUILD)/%.o,$(SRC_S))
+
+# --------------------------------------------------------
+# Compiler Flags
+# --------------------------------------------------------
+
+CFLAGS := \
+	-Wall \
+	-O2 \
+	-ffreestanding \
+	-nostdlib \
+	-nostartfiles \
+	-I$(INC_DIR)
+
+# --------------------------------------------------------
+# Targets
+# --------------------------------------------------------
 
 all: kernel8.img
 
-build:
-	mkdir -p build
+$(BUILD):
+	mkdir -p $(BUILD)
 
-build/main.o: main.c | build
+$(BUILD)/%.o: $(SRC_DIR)/%.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/boot.o: boot.S | build
+$(BUILD)/%.o: $(SRC_DIR)/%.S | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/kernel.elf: $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(LDFLAGS) -o $@
+$(BUILD)/kernel.elf: $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -T linker.ld -o $@
 
-kernel8.img: build/kernel.elf
+kernel8.img: $(BUILD)/kernel.elf
 	$(OBJCOPY) $< -O binary $@
 
 run: kernel8.img
@@ -41,6 +66,7 @@ run: kernel8.img
 		-display none
 
 clean:
-	rm -rf build kernel8.img
+	rm -rf $(BUILD) kernel8.img
 
 .PHONY: all run clean
+

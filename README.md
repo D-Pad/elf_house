@@ -17,7 +17,9 @@ Below are some important compiler flags and what they mean.
    startup code
 
 
-## Assembly Instructions in boot.S File
+## Assembly Code in boot.S File
+Below is a description of some of the commands in the assembly code, and what 
+they're doing
 <table>
   <thead>
     <th>Command</th>
@@ -64,4 +66,30 @@ Below are some important compiler flags and what they mean.
       <td>Pauses the CPU to save power in the infinite loop.</td>
     </tr>
 </table>
+
+### Understanding the .bss clearing loop
+When the linker says:
+```
+__bss_start = 0x81000
+__bass_end  = 0x81200
+```
+The assembly instruction do this:
+```
+x0 = 0x81000
+x1 = 0x81200
+```
+Which makes the loop function like this:
+```
+store 0
+advance 8 bytes
+store 0
+advance 8 bytes
+store 0
+advance 8 bytes
+...
+```
+until `x0 == x1`. At that point, every uninitialized global variable contains
+a 0 value instead of whatever random value already existed at the memory 
+address.
+
 
