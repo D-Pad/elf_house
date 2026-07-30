@@ -93,7 +93,7 @@ a 0 value instead of whatever random value already existed at the memory
 address.
 
 
-## UART Drivers
+## UART Driver
 **UART** stands for *Universal Asynchronous Receiver/Transmitter*. The source 
 code file `src/uart.c` allows us to talk directly to the hardware, and write 
 data one byte at a time. The Raspberry Pi exposes hardware peripherals 
@@ -140,6 +140,7 @@ thinks it's writing memory. The hardware interprets it as a command.
 
 The Pi documentation says:
 > The PL011 UART registers begin at offset 0x201000 from the peripheral base.
+
 So we can get the starting address of UART0 like this:
 ```
 0x3F000000
