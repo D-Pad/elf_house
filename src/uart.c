@@ -1,32 +1,30 @@
 #include "uart.h"
+#include "mmio.h"
+#include "bcm2837.h"
+#include "uart_regs.h"
 
-#define MMIO_BASE 0x3F000000
 
-#define UART0_BASE (MMIO_BASE + 0x201000)
-
-#define UART0_DR     ((volatile unsigned int *)(UART0_BASE + 0x00))
-#define UART0_FR     ((volatile unsigned int *)(UART0_BASE + 0x18))
-
-#define UART_FR_TXFF (1 << 5)
-
+// UART Initialization method. It will be very important to change this 
+// when moving from a virtual machine to actual hardware. For now, it's 
+// left blank because QEMU starts with UART in a usable state
 void uart_init(void)
 {
-    /*
-     * For now, leave initialization minimal.
-     * QEMU starts the UART in a usable state.
-     */
+
 }
 
+// Function to 'put character' into a specific memory address
 void uart_putc(char c)
 {
-    while (*UART0_FR & UART_FR_TXFF)
+    while (mmio_read(UART0_FR) & UART_FR_TXFF)
     {
         // Wait until transmit FIFO has space
     }
 
-    *UART0_DR = c;
+    mmio_write(UART0_DR, c);
 }
 
+// Function to write an array of characters (c string) into a multiple
+// memory addresses. Basically a print function
 void uart_puts(const char *s)
 {
     while (*s)
